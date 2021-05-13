@@ -56,7 +56,11 @@ function install_artifacts() {
 }
 
 function configure_kata_default_configs() {
-  sed -i "s/\(default_vcpus\).*/\1\ = $(($(lscpu | grep 'CPU(s):' | head -1 | awk '{print $2}') * 80/100))/g" `grep -rl default_vcpus $(find /opt/kata/ -name "*.toml")`
+  max_cpus=$(($(lscpu | grep 'CPU(s):' | head -1 | awk '{print $2}') * 80/100))
+  if [ $max_cpus -gt 128 ]; then
+    max_cpus=128
+  fi
+  sed -i "s/\(default_vcpus\).*/\1\ = $max_cpus/g" `grep -rl default_vcpus $(find /opt/kata/ -name "*.toml")`
   sed -i "s/\(default_memory\).*/\1\ = $(($(grep MemTotal /proc/meminfo | awk '{print $2}') * 80/102400))/g" `grep -rl default_memory $(find /opt/kata/ -name "*.toml")`
 }
 
